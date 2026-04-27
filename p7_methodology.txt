@@ -1,0 +1,94 @@
+P7 - RFM SEGMENTATION: METHODOLOGY
+============================================================
+Author : Ashwin Kumar
+Dataset: Online Retail II (UCI, 2009-2011), cleaned per P6 rules.
+
+INPUT
+------------------------------------------------------------
+online_retail_II_cleaned.csv
+  - 779,425 transaction rows (post-cleaning)
+  - 5,878 unique customers
+  - 2009-12-01 to 2011-12-09
+
+Cleaning carried over from P6:
+  - Dropped rows with null Customer ID.
+  - Dropped rows with Quantity <= 0 (returns / cancellations).
+  - Dropped rows with Price <= 0 (manual adjustments).
+  - Dropped exact duplicate rows.
+  - Added Revenue = Quantity * Price.
+
+SNAPSHOT DATE
+------------------------------------------------------------
+Snapshot date = max(InvoiceDate) + 1 day = 2011-12-10.
+
+Rationale: using max(InvoiceDate) directly would assign a recency of 0 days
+to any customer whose last purchase fell on the dataset's final day, which
+breaks downstream calculations that expect recency >= 1 (e.g. ratios such
+as 1/recency, log(recency)). Adding one day shifts the entire distribution
+to be strictly positive without distorting relative ranking - every
+customer's recency moves by exactly one day.
+
+PER-CUSTOMER AGGREGATION
+------------------------------------------------------------
+For each Customer ID:
+  recency_days = (snapshot_date - max(InvoiceDate)).days
+  frequency    = number of DISTINCT Invoice IDs
+  monetary     = sum of Revenue (= Quantity * Price)
+
+QUINTILE SCORING (1-5)
+------------------------------------------------------------
+Each of R, F, M is split into five quintiles using pd.qcut on the
+rank-transformed series (method='first'). Pre-ranking is the standard
+RFM workaround for ties: many customers share frequency = 1, so qcut
+on raw values would fail to allocate exactly 20% per bin.
+
+  r_score: lower recency_days -> HIGHER score (5 = most recent)
+  f_score: higher frequency   -> HIGHER score (5 = most frequent)
+  m_score: higher monetary    -> HIGHER score (5 = highest spend)
+
+Composite fields:
+  rfm_score = concatenation of r,f,m as a 3-character string, e.g. "555".
+  rfm_sum   = r_score + f_score + m_score, integer in [3, 15].
+
+SEGMENT RULES (priority order; first match wins)
+------------------------------------------------------------
+  1. Cannot Lose Them  : R=1, F=4-5, M=4-5
+  2. Champions         : R=5, F=4-5, M=4-5
+  3. Loyal Customers   : R=3-5, F=4-5, M=3-5  (not already Champions)
+  4. At Risk           : R=1-2, F=2-5, M=3-5
+  5. Potential Loyalists: R=4-5, F=2-3
+  6. New Customers     : R=4-5, F=1
+  7. Promising         : R=3-4, F=1
+  8. Need Attention    : R=2-3, F=2-3
+  9. About To Sleep    : R=2-3, F=1
+ 10. Lost              : R=1, F=1, M=1-2
+ 11. Hibernating       : R=1-2, F=1-2, M=1-2
+
+Rule precedence is intentional. "Cannot Lose Them" is checked before
+"At Risk" so the highest-value lapsed customers are surfaced as a
+distinct, urgent action group rather than blended into the broader
+At Risk pool. Similarly, Champions is checked before Loyal Customers
+because every Champion is technically also Loyal, but the labels
+serve different campaigns.
+
+LIMITATIONS
+------------------------------------------------------------
+  * Overlap and edge cells: a small number of (r, f, m) combinations
+    do not match any rule above (e.g. R=1, F=3, M=2). These customers
+    are labelled "Other" so the row count is preserved and the gap is
+    transparent.
+  * Tie-breaking in qcut: rank-based pre-bucketing breaks ties by row
+    order. Two customers with identical raw R/F/M values can therefore
+    end up in different score bins. The effect is negligible at scale
+    but exists.
+  * Quintiles are dataset-relative. A customer's "5" recency is "most
+    recent in this dataset", not an absolute industry benchmark.
+  * Returns are excluded upstream; monetary is GROSS revenue, not net.
+  * Wholesale skew: the source retailer leans toward B2B wholesale
+    buyers, so frequency and monetary distributions are heavier-tailed
+    than a pure B2C dataset would be.
+
+DATASET REFERENCE
+------------------------------------------------------------
+Online Retail II, UCI Machine Learning Repository (2009-2011).
+https://archive.ics.uci.edu/dataset/502/online+retail+ii
