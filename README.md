@@ -91,4 +91,4 @@ Python, pandas, numpy, matplotlib, squarify, reportlab.
 ## 9. Contact
 
 - Email: [ashwinkumarglbimr18@gmail.com](mailto:ashwinkumarglbimr18@gmail.com)
-- LinkedIn: [https://www.linkedin.com/in/ashwinkumar27/](https://www.linkedin.com/in/ashwinkumar27/)
+- LinkedIn: [https://www.linkedin.com/in/ashwin-kumar-180816174/](https://www.linkedin.com/in/ashwin-kumar-180816174/))
