@@ -55,6 +55,22 @@ I built this as the companion piece to my P6 Cohort Retention analysis. P6 answe
 - **At Risk + Need Attention**: a 1,531-customer reactivation pool worth **£2.05M** in lifetime revenue — the main pipeline for automated win-back sequences.
 - The bottom 28% of customers (Lost, Hibernating, About To Sleep, Promising, New, Other) produce only **3.3%** of revenue. These segments justify acquisition-funnel spend at most — no lifecycle investment.
 
+## 📊 Live Dashboard
+
+**[View Interactive Looker Studio Dashboard →](https://datastudio.google.com/reporting/daf5eb71-2e4c-420a-a4a4-436280be0359)**
+
+![RFM Dashboard Preview](dashboard_screenshot.png)
+
+### Dashboard Features:
+- **3 KPI scorecards:** Total customers (5.9K), Total revenue (£17.4M), Avg revenue per customer (£2.96K)
+- **Revenue concentration analysis:** Donut chart showing Top tier drives 83.5% of revenue
+- **Segment comparison:** Horizontal bar chart ranking all 11 segments by revenue contribution
+- **RFM scatter plot:** Bubble chart visualizing customer positioning by Recency × Frequency, sized by monetary value
+- **Interactive filter:** Segment dropdown to drill into specific customer groups
+
+### Key Takeaway:
+**Top tier customers (Champions + Loyal) represent 47% of the customer base but drive 83.5% of total revenue (£14.5M).** This extreme concentration validates targeted retention strategies for high-value segments while exploring reactivation campaigns for dormant customers.
+
 ## 5. Strategic Recommendations
 
 - **Champions → VIP protection.** Tiered loyalty programme, dedicated account manager for the top quintile, surprise-and-delight gifts at anniversary milestones. Goal: keep churn near zero, because losing a Champion erases roughly £12K of lifetime value.
